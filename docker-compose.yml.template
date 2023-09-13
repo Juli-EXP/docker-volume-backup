@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+  docker-volume-backup:
+    image: docker-volume-backup:latest
+    networks:
+      other-external-network:
+      docker-socket_network:
+    environment:
+      - DOCKER_HOST=tcp://docker-socket-proxy:2375
+      - RETENTION=7
+      - BACKUP_VOLUME=docker-volume-backup_storage-location  # Use the full name of the docker volume which gets displayed by docker volume ls
+    depends_on:
+      - docker-socket-proxy
+    restart: always
+
+  docker-socket-proxy:
+    image: ghcr.io/tecnativa/docker-socket-proxy:0.1.1
+    networks: 
+      docker-socket_network:
+    environment:
+      - VOLUMES=1     # Listing volumes
+      - IMAGES=1      # Pulling images
+      - CONTAINERS=1  # Creating containers if POST is set to 1
+      - POST=1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro 
+    restart: always
+
+
+volumes:
+  storage-location:
+    driver: local
+    driver_opts:
+      type: cifs
+      device: "//my/remote/storage"
+      o: username=${CIFS_USERNAME},password=${CIFS_PASSWORD},addr=my-address,vers=3.0
+
+networks:
+  other-external-network:
+    external: true
+  docker-socket_network:        # Communication between the container and the docker socket proxy
+    internal: true
+  
+  

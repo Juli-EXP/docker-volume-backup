@@ -1,0 +1,5 @@
+# Run daily backup of all Docker Volumes at 08:00
+0 8 * * * root /app/backup-volumes.sh
+
+# Run deletion of Docker Volume backups, which are older than 7 days
+0 9 * * * root /app/purge-volumes.sh
