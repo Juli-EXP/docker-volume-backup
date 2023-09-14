@@ -1,4 +1,4 @@
-# Run daily backup of all Docker Volumes at 08:00
+# Run backup of all Docker Volumes
 0 8 * * * root /app/backup-volumes.sh > /proc/1/fd/1
 
 # Run deletion of old Docker Volume backups

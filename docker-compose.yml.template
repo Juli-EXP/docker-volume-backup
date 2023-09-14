@@ -7,9 +7,12 @@ services:
       other-external-network:
       docker-socket_network:
     environment:
+      - TZ=Europe/Rome
       - DOCKER_HOST=tcp://docker-socket-proxy:2375
       - RETENTION=7
       - BACKUP_VOLUME=docker-volume-backup_storage-location  # Use the full name of the docker volume which gets displayed by docker volume ls
+    volumes:
+      - storage-location:/backup
     depends_on:
       - docker-socket-proxy
     restart: always
