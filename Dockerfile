@@ -27,9 +27,11 @@ VOLUME /backup
 
 COPY scripts/*.sh /app/
 
-COPY scripts/crontab /etc/crontab
-
 RUN chmod +x /app/*.sh
+
+COPY scripts/crontab /etc/cron.d/backup-volume
+
+RUN chmod 644 /etc/cron.d/backup-volume
 
 ENTRYPOINT [ "/app/entrypoint.sh" ]
 
