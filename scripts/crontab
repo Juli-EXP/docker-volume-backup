@@ -1,8 +1,0 @@
-SHELL=/bin/sh
-PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-
-# Run backup of all Docker Volumes
-0 8 * * * root /app/backup-volumes.sh > /proc/1/fd/1
-
-# Run deletion of old Docker Volume backups
-0 9 * * * root /app/purge-volumes.sh > /proc/1/fd/1
