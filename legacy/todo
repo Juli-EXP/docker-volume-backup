@@ -1,0 +1,14 @@
+---
+v1
+crontab time with env variable, seperated by comma
+proper check if nas is mounted
+optional temp location if nas is not mounted and script which moves backups to the nas when its available
+List of volumes to ignore
+---
+v2
+check if there is enough free space
+write first to temp, then to main
+--
+v3
+Split into API(Creates/Restores Backups, Returns status), Scheduler(Sends request to API) and GUI(Optional)
+Config file or redis (or similar)
