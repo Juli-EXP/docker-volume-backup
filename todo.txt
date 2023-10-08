@@ -1,0 +1,6 @@
+General cleanup (try/catch, formatting, comments)
+Better logging
+Store config in db or file
+Make prio of config: db/file -> environment variable -> default value
+Add variable to ignore certain volumes
+Detect if error is form axios or general in printError()
