@@ -43,16 +43,9 @@ services:
       - DOCKER_HOST=tcp://docker-socket-proxy:2375
       - BACKUP_VOLUME=docker-volume-backup_storage-location # Use the full name of the docker volume which gets displayed by running docker volume ls
       - BACKUP_DIR=/backup  # Optional: change the location of the backup folder inside the container. Needs to match the volume mounting point
-      - TEMP_VOLUME=docker-volume-backup_temp-location # Use the full name of the docker volume which gets displayed by running docker volume ls
-      - TEMP_DIR=/temp  # Optional: change the location of the temp folder inside the container. Needs to match the volume mounting point. Folder is used if /backup is not available
       - RETENTION=7 # Optional: change the number of days of backups to be kept
-      - IGNORED_VOLUMES=docker-volume-backup_temp-location  # Comma seperated list of volumes wich are ignored by the backup script
-      - CRON_BACKUP=0 8 * * *,@reboot # Optional: comma seperated list of cron schedules for the backup script
-      - CRON_PRUGE=0 9 * * *  # Optional: comma seperated list of cron schedules for the purge script
-      - CRON_TEMP=0 10 * * *  # Optional: comma seperated list of cron schedules for the temp folder script
     volumes:
       - storage-location:/backup  # Replace with your volume
-      - temp-location:/temp # Replace with your volume
     depends_on:
       - docker-socket-proxy
     restart: always

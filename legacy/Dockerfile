@@ -22,20 +22,7 @@ ENV BACKUP_VOLUME=storage-location
 
 ENV BACKUP_DIR=/backup
 
-ENV TEMP_VOLUME=temp-location
-
-ENV TEMP_DIR=/temp
-
 ENV RETENTION=7
-
-ENV IGNORED_VOLUMES=temp-location
-
-ENV CRON_BACKUP=0 8 * * *
-
-ENV CRON_PURGE=0 9 * * *
-
-ENV CRON_TEMP=0 10 * * *
-
 
 VOLUME /backup
 
