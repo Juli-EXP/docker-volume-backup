@@ -1,6 +1,13 @@
+- Prio 1
 General cleanup (try/catch, formatting, comments)
-Better logging
-Store config in db or file
-Make prio of config: parameter on http request -> db/file -> environment variable -> default value
-Add variable to ignore certain volumes
+Better error handling
+Create more smaller functions
+
+- Prio 2
 Detect if error is form axios or general in printError()
+Better logging
+Make prio of config: parameter on http request -> db/file -> environment variable -> default value
+
+- Prio 3
+Store config in db or file
+Add variable to ignore certain volumes

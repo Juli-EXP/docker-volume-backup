@@ -8,10 +8,15 @@ import { printError } from "../utils/error";
 import {
     getVolumes,
     getVolume,
+    deleteVolume
 } from "../controllers/backup"
 
 
 const router = express.Router();
+
+router.get("/test", async (req, res) => [
+    deleteVolume("my_custom_volume")
+]);
 
 // ---------- Backup information ----------
 

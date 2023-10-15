@@ -4,9 +4,13 @@ import axios from "axios";
 //Import global variables
 import { config } from "../config/variables";
 
+
+// ---------- External funcitons ----------
+
 export async function init() {
     console.log("Initializing program");
 
+    // Pulling image for the backup container
     console.log(`Pulling image: ${config.CONTAINER_IMAGE}`);
     const response = await pullImage();
     if (response) {
@@ -15,6 +19,9 @@ export async function init() {
         throw new Error(`There was an error while pulling image: ${config.CONTAINER_IMAGE}`);
     }
 }
+
+
+// ---------- Internal functions ----------
 
 // Pull the Docker image used for creating the Backup
 async function pullImage() {
