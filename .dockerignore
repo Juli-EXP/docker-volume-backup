@@ -1,0 +1,7 @@
+# Project specific folders
+.api-old
+.legacy
+
+# Git specific folders
+.gitignore
+README.md
