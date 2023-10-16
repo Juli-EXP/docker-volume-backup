@@ -1,3 +1,9 @@
+/*
+*   Config router
+*
+*
+*/
+
 // Import libraries
 import express from "express";
 

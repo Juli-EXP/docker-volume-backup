@@ -6,7 +6,7 @@ import bodyParser from "body-parser"
 import router from "./routes";
 
 // Import util functions
-import { printError } from "./utils/error";
+import { formatError } from "./utils/error";
 
 //Import config variables
 import { config } from "./config/variables";
@@ -28,7 +28,7 @@ init()
     });
   })
   .catch((error) => {
-    console.error('Initialization error:', printError(error));
+    console.error('Initialization error:', formatError(error));
     process.exit(1); // Exit the application on error if needed
   });
 

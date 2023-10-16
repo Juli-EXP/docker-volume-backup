@@ -1,3 +1,9 @@
+/*
+*   Global variables
+*
+*
+*/
+
 interface Configuration {
     readonly PORT: number;
     readonly DOCKER_API_URL: string;

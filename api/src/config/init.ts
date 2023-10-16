@@ -1,3 +1,9 @@
+/*
+*   Initialization functions
+*
+*
+*/
+
 // Import libraries
 import axios from "axios";
 

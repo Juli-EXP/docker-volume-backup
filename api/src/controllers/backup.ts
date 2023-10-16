@@ -1,3 +1,9 @@
+/*
+*    Backup controller
+*    Functions starting with docker are responsible for making API calls with the Docker socket
+*
+*/
+
 // Import libraries
 import axios from "axios";
 
@@ -5,11 +11,11 @@ import axios from "axios";
 import { config, PathType } from "../config/variables";
 
 
-// ---------- External functions ----------
+// -------------------- External functions --------------------
 
 // Return a list of all Docker volumes
 export async function getVolumes() {
-    const url = `http://${config.DOCKER_API_URL}/system/df`
+    const url = `http://${config.DOCKER_API_URL}/system/df`;
     const volumesJson = (await axios.get(url)).data;
 
     const volumes = {
@@ -36,7 +42,12 @@ export async function getVolume(volumeName: string) {
 }
 
 
-// ---------- Internal functions ----------
+// -------------------- Docker API calls --------------------
+
+
+
+
+// -------------------- Internal functions --------------------
 
 // Run a Docker container to backup a certain volume
 async function backupVolume(dataVolumeName: string, backupVolumeName: string) {
@@ -67,7 +78,7 @@ async function backupVolume(dataVolumeName: string, backupVolumeName: string) {
 }
 
 async function createVolume(volumeName: string, type: string, path: PathType, username?: string, password?: string) {
-    let data;
+    let data: any;
 
     switch (type) {
         case PathType.Local:
@@ -103,7 +114,7 @@ async function createVolume(volumeName: string, type: string, path: PathType, us
 }
 
 export async function deleteVolume(volumeName) {
-    const volumeToDelete = (await axios.get(`http://${config.DOCKER_API_URL}/volumes`)).data.Volumes.filter((volume: any) => volume.Name === volumeName)
+    const volumeToDelete = (await axios.get(`http://${config.DOCKER_API_URL}/volumes`)).data.Volumes.filter((volume: any) => volume.Name === volumeName);
 
     if (!volumeToDelete[0].Labels["com.dvb.volume"]) {
         throw new Error("Cannot delte volume. Volume was created outside of dvb");
@@ -115,3 +126,4 @@ export async function deleteVolume(volumeName) {
         throw new Error(response.data);
     }
 }
+

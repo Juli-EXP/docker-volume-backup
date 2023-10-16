@@ -1,3 +1,9 @@
+/*
+*   Config controller
+*
+*
+*/
+
 //Import global variables
 import { config } from "../config/variables";
 
