@@ -11,7 +11,8 @@ func main() {
 	//printVolumes()
 	//printVolumesWithSize()
 	//testCreateVolume()
-	testDeleteVolume("test")
+	//testDeleteVolume("test")
+	testCreateVolumeBackup("portainer_data")
 }
 
 func testPrintVolumes() {
@@ -42,7 +43,7 @@ func testPrintVolumesWithSize() {
 	}
 }
 
-func testCreateVolume(){
+func testCreateVolume() {
 	volumeName, err := backup.CreateDockerBackupVolume()
 	if err != nil {
 		panic(err)
@@ -50,10 +51,29 @@ func testCreateVolume(){
 	fmt.Println(volumeName)
 }
 
-func testDeleteVolume(volumeName string){
+func testDeleteVolume(volumeName string) {
 	err := backup.DeleteDockerBackupVolume(volumeName)
 	if err != nil {
 		panic(err)
 	}
 	testPrintVolumes()
+}
+
+func testCreateVolumeBackup(volumeName string) {
+	backupVolumeName, err := backup.CreateDockerBackupVolume()
+	if err != nil {
+		panic(err)
+	}
+
+	err = backup.CreateDockerVolumeBackup(backup.CreateBackupOptions{
+		VolumeName:       volumeName,
+		BackupVolumeName: backupVolumeName,
+		IncludeCifs:      false,
+		IncludeNfs:       false,
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	backup.DeleteDockerBackupVolume(backupVolumeName)
 }

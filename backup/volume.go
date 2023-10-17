@@ -39,8 +39,6 @@ type VolumesResponse struct {
 
 // Returns array of all Docker volumes with Name and Type
 func GetDockerVolumes() (VolumesResponse, error) {
-	var volumeResponse VolumesResponse
-
 	// Create a Docker client
 	cli, err := client.NewClientWithOpts(client.WithHost(config.DOCKER_API_URL))
 	if err != nil {
@@ -53,6 +51,7 @@ func GetDockerVolumes() (VolumesResponse, error) {
 		return VolumesResponse{}, err
 	}
 
+	var volumeResponse VolumesResponse
 	// Iterate over the list of volumes and get their options
 	for _, volume := range volumes.Volumes {
 		volumeInfo, err := cli.VolumeInspect(context.Background(), volume.Name)
