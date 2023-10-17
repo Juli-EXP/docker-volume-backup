@@ -1,0 +1,11 @@
+Check size of volumes to be backuped
+Rest api
+Check if disk space is sufficent in temp
+Create tar.gz for each volume in temp location
+Check if remote location has enough space
+Copy to remote location
+Error handling
+Cli
+Optional external db (key/value) for persistent status, etc
+Prometheus metrics
+Apprise notifications

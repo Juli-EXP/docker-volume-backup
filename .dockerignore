@@ -5,3 +5,5 @@
 # Git specific folders
 .gitignore
 README.md
+todo
+docker-compose.yml
