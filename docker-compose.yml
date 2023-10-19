@@ -1,0 +1,31 @@
+version: "3.9"
+
+services:
+  docker-volume-backup:
+    build: .
+    image: juli-exp/docker-volume-backup:latest
+    networks:
+      docker-volume-backup_network:
+    ports:
+      - "3000:3000"
+    environment:
+      - DOCKER_API_URL=http://docker-socket-proxy:2375
+    restart: always
+
+  docker-socket-proxy:
+    image: ghcr.io/tecnativa/docker-socket-proxy:latest
+    networks:
+      docker-volume-backup_network:
+    environment:
+      - CONTAINERS=1
+      - IMAGES=1
+      - VOLUMES=1
+      - SYSTEM=1
+      - POST=1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: always
+
+networks:
+  docker-volume-backup_network:
+    name: docker-volume-backup_network

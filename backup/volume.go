@@ -125,7 +125,7 @@ func GetDockerVolumesWithSize() (VolumesResponse, error) {
 }
 
 // Creates a Docker volume where backups are stored
-func CreateDockerBackupVolume() (string, error) {
+func CreateDockerBackupVolume() (volumeName string, err error) {
 	// Create a Docker client
 	cli, err := client.NewClientWithOpts(client.WithHost(config.DOCKER_API_URL))
 	if err != nil {
@@ -134,7 +134,7 @@ func CreateDockerBackupVolume() (string, error) {
 	defer cli.Close()
 
 	var volumeConfig volume.CreateOptions
-	var volumeName = "dvb-backup-" + fmt.Sprint(time.Now().Unix())
+	volumeName = "dvb-backup-" + fmt.Sprint(time.Now().Unix())
 	//var volumeType = config.BACKUP_VOLUME_TYPE
 
 	switch config.BACKUP_VOLUME_TYPE {

@@ -13,7 +13,9 @@ RUN go mod download
 # Build program
 COPY . .
 
-RUN go build -o dvb
+RUN go build -o dvb-server /app/cmd/dvb-server/main.go
+
+#RUN go build -o dvb-cli /app/cmd/dvb-cli/main.go
 
 
 # Deploy stage 
@@ -21,8 +23,10 @@ FROM alpine:latest
 
 WORKDIR /app
 
-COPY --from=builder /app/dbv /app/dvb
+COPY --from=builder /app/dvb-server /app/dvb-server
+
+#COPY --from=builder /app/dvb-cli /app/dvb-cli
 
 EXPOSE 3000
 
-CMD [ "dbv" ]
+CMD [ "/app/dvb-server" ]

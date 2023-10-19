@@ -14,8 +14,8 @@ import (
 type CreateBackupOptions struct {
 	VolumeName       string // Volume to be backed up
 	BackupVolumeName string // Volume where the backup will be saved
-	IncludeNfs       bool
-	IncludeCifs      bool
+	IncludeNfs       bool	// Default false
+	IncludeCifs      bool	// Default false
 }
 
 type DeleteBackupOptions struct{}
