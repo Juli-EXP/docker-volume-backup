@@ -16,7 +16,6 @@ func main() {
 	fmt.Println("Hello World")
 }
 
-//lint:ignore U1000 Ignore unused function temporarily for debugging
 func testPrintVolumes() {
 	volumeResponse, err := backup.GetDockerVolumes()
 	if err != nil {
@@ -29,7 +28,6 @@ func testPrintVolumes() {
 	}
 }
 
-//lint:ignore U1000 Ignore unused function temporarily for debugging
 func testPrintVolumesWithSize() {
 	volumeResponse, err := backup.GetDockerVolumesWithSize()
 	if err != nil {
@@ -46,7 +44,6 @@ func testPrintVolumesWithSize() {
 	}
 }
 
-//lint:ignore U1000 Ignore unused function temporarily for debugging
 func testCreateVolume() {
 	volumeName, err := backup.CreateDockerBackupVolume()
 	if err != nil {
@@ -55,7 +52,6 @@ func testCreateVolume() {
 	fmt.Println(volumeName)
 }
 
-//lint:ignore U1000 Ignore unused function temporarily for debugging
 func testDeleteVolume(volumeName string) {
 	err := backup.DeleteDockerBackupVolume(volumeName)
 	if err != nil {
@@ -64,7 +60,6 @@ func testDeleteVolume(volumeName string) {
 	testPrintVolumes()
 }
 
-//lint:ignore U1000 Ignore unused function temporarily for debugging
 func testCreateVolumeBackup(volumeName string) {
 	backupVolumeName, err := backup.CreateDockerBackupVolume()
 	if err != nil {
@@ -81,5 +76,8 @@ func testCreateVolumeBackup(volumeName string) {
 		panic(err)
 	}
 
-	backup.DeleteDockerBackupVolume(backupVolumeName)
+	err = backup.DeleteDockerBackupVolume(backupVolumeName)
+	if err != nil {
+		panic(err)
+	}
 }

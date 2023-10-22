@@ -14,25 +14,30 @@ import (
 type CreateBackupOptions struct {
 	VolumeName       string // Volume to be backed up
 	BackupVolumeName string // Volume where the backup will be saved
-	IncludeNfs       bool	// Default false
-	IncludeCifs      bool	// Default false
+	IncludeNfs       bool   // Default false
+	IncludeCifs      bool   // Default false
 }
 
 type DeleteBackupOptions struct{}
 
-// Creates a backup of a Docker volume
+// CreateDockerVolumeBackup Creates a backup of a Docker volume
 func CreateDockerVolumeBackup(options CreateBackupOptions) error {
 	// Create a Docker client
-	cli, err := client.NewClientWithOpts(client.WithHost(config.DOCKER_API_URL))
+	cli, err := client.NewClientWithOpts(client.WithHost(config.DockerApiUrl))
 	if err != nil {
 		return err
 	}
-	defer cli.Close()
+	defer func(cli *client.Client) {
+		errClose := cli.Close()
+		if errClose != nil {
+			err = errClose
+		}
+	}(cli)
 
 	// TODO download image
 
-	config := &container.Config{
-		Image: config.BACKUP_CONTAINER_IMAGE,
+	containerConfig := &container.Config{
+		Image: config.BackupContainerImage,
 		Labels: map[string]string{
 			"com.dvb.container": "true",
 		},
@@ -53,7 +58,7 @@ func CreateDockerVolumeBackup(options CreateBackupOptions) error {
 	// Create the container
 	resp, err := cli.ContainerCreate(
 		context.Background(),
-		config,
+		containerConfig,
 		hostConfig,
 		nil,
 		nil,
@@ -72,7 +77,7 @@ func CreateDockerVolumeBackup(options CreateBackupOptions) error {
 	select {
 	case err := <-errCh:
 		if err != nil {
-			panic(err)
+			return err
 		}
 	case <-statusCh:
 	}
@@ -86,7 +91,7 @@ func CreateDockerVolumeBackup(options CreateBackupOptions) error {
 	return nil
 }
 
-// Deletes a backup of a Docker volume
+// DeleteDockerVolumeBackup Deletes a backup of a Docker volume
 func DeleteDockerVolumeBackup(options DeleteBackupOptions) error {
 	return nil
 }

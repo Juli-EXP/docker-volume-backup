@@ -37,24 +37,28 @@ type VolumesResponse struct {
 	Volumes []Volume `json:"Volumes"`
 }
 
-// Returns array of all Docker volumes with Name and Type
-func GetDockerVolumes() (VolumesResponse, error) {
+// GetDockerVolumes Returns array of all Docker volumes with Name and Type
+func GetDockerVolumes() (volumeResponse VolumesResponse, err error) {
 	// Create a Docker client
-	cli, err := client.NewClientWithOpts(client.WithHost(config.DOCKER_API_URL))
+	cli, err := client.NewClientWithOpts(client.WithHost(config.DockerApiUrl))
 	if err != nil {
 		return VolumesResponse{}, err
 	}
-	defer cli.Close()
+	defer func(cli *client.Client) {
+		errClose := cli.Close()
+		if errClose != nil {
+			err = errClose
+		}
+	}(cli)
 
 	volumes, err := cli.VolumeList(context.Background(), volume.ListOptions{})
 	if err != nil {
 		return VolumesResponse{}, err
 	}
 
-	var volumeResponse VolumesResponse
 	// Iterate over the list of volumes and get their options
-	for _, volume := range volumes.Volumes {
-		volumeInfo, err := cli.VolumeInspect(context.Background(), volume.Name)
+	for _, dockerVolume := range volumes.Volumes {
+		volumeInfo, err := cli.VolumeInspect(context.Background(), dockerVolume.Name)
 		if err != nil {
 			return VolumesResponse{}, err
 		}
@@ -82,7 +86,7 @@ func GetDockerVolumes() (VolumesResponse, error) {
 
 		// Append volume name and type to the result list
 		volumeResponse.Volumes = append(volumeResponse.Volumes, Volume{
-			Name: volume.Name,
+			Name: dockerVolume.Name,
 			Type: volumeType,
 		})
 	}
@@ -90,16 +94,21 @@ func GetDockerVolumes() (VolumesResponse, error) {
 	return volumeResponse, nil
 }
 
-// Returns array of all Docker volumes with Name, Size, Type and Labels
+// GetDockerVolumesWithSize Returns array of all Docker volumes with Name, Size, Type and Labels
 func GetDockerVolumesWithSize() (VolumesResponse, error) {
-	url := config.DOCKER_API_URL + "/system/df"
+	url := config.DockerApiUrl + "/system/df"
 
 	// Send an HTTP  request to the Docker API
 	resp, err := http.Get(url)
 	if err != nil {
 		return VolumesResponse{}, err
 	}
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		errClose := Body.Close()
+		if errClose != nil {
+			err = errClose
+		}
+	}(resp.Body)
 
 	// Read the response body into a byte slice
 	body, err := io.ReadAll(resp.Body)
@@ -115,8 +124,8 @@ func GetDockerVolumesWithSize() (VolumesResponse, error) {
 	}
 
 	// Iterate over the volumes and set the "Type" field to "local" if it's empty
-	for i, volume := range volumesResponse.Volumes {
-		if volume.Type == "" {
+	for i, dockerVolume := range volumesResponse.Volumes {
+		if dockerVolume.Type == "" {
 			volumesResponse.Volumes[i].Type = "local"
 		}
 	}
@@ -124,27 +133,32 @@ func GetDockerVolumesWithSize() (VolumesResponse, error) {
 	return volumesResponse, nil
 }
 
-// Creates a Docker volume where backups are stored
+// CreateDockerBackupVolume Creates a Docker volume where backups are stored
 func CreateDockerBackupVolume() (volumeName string, err error) {
 	// Create a Docker client
-	cli, err := client.NewClientWithOpts(client.WithHost(config.DOCKER_API_URL))
+	cli, err := client.NewClientWithOpts(client.WithHost(config.DockerApiUrl))
 	if err != nil {
 		return "", err
 	}
-	defer cli.Close()
+	defer func(cli *client.Client) {
+		errClose := cli.Close()
+		if errClose != nil {
+			err = errClose
+		}
+	}(cli)
 
 	var volumeConfig volume.CreateOptions
 	volumeName = "dvb-backup-" + fmt.Sprint(time.Now().Unix())
 	//var volumeType = config.BACKUP_VOLUME_TYPE
 
-	switch config.BACKUP_VOLUME_TYPE {
+	switch config.BackupVolumeType {
 	case string(Local):
 		volumeConfig = volume.CreateOptions{
 			Name:   volumeName,
 			Driver: "local",
 			DriverOpts: map[string]string{
 				"type":   "none",
-				"device": config.BACKUP_VOLUME_PATH,
+				"device": config.BackupVolumePath,
 				"o":      "bind",
 			},
 			Labels: map[string]string{
@@ -157,8 +171,8 @@ func CreateDockerBackupVolume() (volumeName string, err error) {
 			Driver: "local",
 			DriverOpts: map[string]string{
 				"type":   "nfs",
-				"o":      "addr=" + config.BACKUP_VOLLUME_HOST + ",rw,noatime,rsize=8192,wsize=8192,tcp,timeo=14,nfsvers=4",
-				"device": ":" + config.BACKUP_VOLUME_PATH,
+				"o":      "addr=" + config.BackupVolumeHost + ",rw,noatime,rsize=8192,wsize=8192,tcp,timeo=14,nfsvers=4",
+				"device": ":" + config.BackupVolumePath,
 			},
 			Labels: map[string]string{
 				"com.dvb.volume": "true",
@@ -170,15 +184,15 @@ func CreateDockerBackupVolume() (volumeName string, err error) {
 			Driver: "local",
 			DriverOpts: map[string]string{
 				"type":   "cifs",
-				"o":      "addr=" + config.BACKUP_VOLLUME_HOST + ",username=" + config.BACKUP_VOLUME_USERNAME + ",password=" + config.BACKUP_VOLUME_PASSWORD + "",
-				"device": config.BACKUP_VOLUME_PATH,
+				"o":      "addr=" + config.BackupVolumeHost + ",username=" + config.BackupVolumeUsername + ",password=" + config.BackupVolumePassword + "",
+				"device": config.BackupVolumePath,
 			},
 			Labels: map[string]string{
 				"com.dvb.volume": "true",
 			},
 		}
 	default:
-		return "", errors.Errorf("Error while parsing BACKUP_VOLUME_TYPE: %s", config.BACKUP_VOLUME_TYPE)
+		return "", errors.Errorf("Error while parsing BACKUP_VOLUME_TYPE: %s", config.BackupVolumeType)
 	}
 
 	// Create the Docker volume
@@ -190,15 +204,20 @@ func CreateDockerBackupVolume() (volumeName string, err error) {
 	return volumeName, err
 }
 
-// Deletes a Docker volume where backups are stored
+// DeleteDockerBackupVolume Deletes a Docker volume where backups are stored
 // This will not delete data on the disk
 func DeleteDockerBackupVolume(volumeName string) error {
 	// Create a Docker client
-	cli, err := client.NewClientWithOpts(client.WithHost(config.DOCKER_API_URL))
+	cli, err := client.NewClientWithOpts(client.WithHost(config.DockerApiUrl))
 	if err != nil {
 		return err
 	}
-	defer cli.Close()
+	defer func(cli *client.Client) {
+		errClose := cli.Close()
+		if errClose != nil {
+			err = errClose
+		}
+	}(cli)
 
 	// Get information about the Docker volume
 	volumeInfo, err := cli.VolumeInspect(context.Background(), volumeName)

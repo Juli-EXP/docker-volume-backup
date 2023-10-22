@@ -2,10 +2,11 @@ package main
 
 import (
 	"github.com/Juli-EXP/docker-volume-backup/api"
+	"github.com/Juli-EXP/docker-volume-backup/config"
 	"github.com/gin-gonic/gin"
 )
 
-func main(){
+func main() {
 	gin.SetMode(gin.ReleaseMode)
 
 	server := gin.Default()
@@ -15,5 +16,8 @@ func main(){
 	api.VolumeRouter(apiRouter.Group("/volume"))
 	api.BackupRouter(apiRouter.Group("/backup"))
 
-	server.Run(":3000")
+	err := server.Run(":" + config.ServerPort)
+	if err != nil {
+		panic(err)
+	}
 }
