@@ -15,7 +15,7 @@ type StorageLocation struct {
 }
 
 // CheckFreeStorage checks if there is enough space on the disk to store the backups
-// TODO change so it checks the controller volume, remove StorageLocation struct and add volume name as parameter
+// TODO change, so it checks the controller volume, remove StorageLocation struct and add volume name as parameter
 func CheckFreeStorage(location StorageLocation) (freeStorage int, err error) {
 	switch location.Type {
 	case config.Local:

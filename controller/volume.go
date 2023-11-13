@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"strings"
 	"time"
@@ -29,7 +30,7 @@ type VolumesResponse struct {
 	Volumes []Volume `json:"Volumes"`
 }
 
-// GetDockerVolumes UNUSED: GetDockerVolumes Returns array of all Docker volumes with Name and Type
+// GetDockerVolumes returns array of all Docker volumes with Name and Type
 func GetDockerVolumes() (volumeResponse VolumesResponse, err error) {
 	// Create a Docker client
 	cli, err := client.NewClientWithOpts(client.WithHost(config.DockerApiUrl))
@@ -88,10 +89,27 @@ func GetDockerVolumes() (volumeResponse VolumesResponse, err error) {
 
 // GetDockerVolumesWithSize returns array of all Docker volumes with Name, Size, Type and Labels
 func GetDockerVolumesWithSize() (VolumesResponse, error) {
-	url := config.DockerApiUrl + "/system/df"
+	var url string
+	var httpClient http.Client
 
-	// Send an HTTP  request to the Docker API
-	resp, err := http.Get(url)
+	if strings.HasPrefix(config.DockerApiUrl, "unix://") {
+		httpClient = http.Client{
+			Transport: &http.Transport{
+				DialContext: func(ctx context.Context, _, _ string) (net.Conn, error) {
+					return net.Dial("unix", strings.TrimPrefix(config.DockerApiUrl, "unix://"))
+				},
+			},
+		}
+		url = "http://localhost/system/df"
+	} else if strings.HasPrefix(config.DockerApiUrl, "http://") {
+		httpClient = http.Client{}
+		url = config.DockerApiUrl + "/system/df"
+	} else {
+		return VolumesResponse{}, errors.Errorf("Cannot determine the type of DockerApiUrl")
+	}
+
+	// Send an HTTP request to the Docker API
+	resp, err := httpClient.Get(url)
 	if err != nil {
 		return VolumesResponse{}, err
 	}

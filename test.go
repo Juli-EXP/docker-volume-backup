@@ -11,7 +11,7 @@ func main() {
 	config.BackupVolumePath = "/home/julian/backup"
 
 	//testPrintVolumes()
-	//testPrintVolumesWithSize()
+	testPrintVolumesWithSize()
 	//_ = testCreateVolume()
 	//testDeleteVolume(volumeName)
 	//testCreateVolumeBackup("portainer_data")
@@ -19,7 +19,7 @@ func main() {
 
 	fmt.Println("Hello World")
 
-	/* TODO Create Backup */
+	/* TODO Create Backup
 	testPrintVolumesWithSize()
 	backupVolumeName, _ := controller.CreateDockerBackupVolume()
 	fmt.Printf("Backup volume name: %s\n", backupVolumeName)
@@ -41,6 +41,19 @@ func main() {
 		IncludeNfs:       false,
 	})
 	_ = controller.DeleteDockerBackupVolume(backupVolumeName)
+	*/
+}
+func byteCountBinary(size int64) string {
+	const unit = 1024
+	if size < unit {
+		return fmt.Sprintf("%d B", size)
+	}
+	div, exp := int64(unit), 0
+	for n := size / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	return fmt.Sprintf("%.1f %ciB", float64(size)/float64(div), "KMGTPE"[exp])
 }
 
 func testPrintVolumes() {

@@ -3,8 +3,6 @@ package controller
 import (
 	"context"
 	"fmt"
-	"io"
-	"os"
 	"time"
 
 	"github.com/Juli-EXP/docker-volume-backup/config"
@@ -37,7 +35,7 @@ func CreateDockerVolumeBackup(options CreateBackupOptions) (err error) {
 		}
 	}(cli)
 
-	err = downloadDockerImage(config.BackupContainerImage)
+	err = DownloadDockerImage(config.BackupContainerImage)
 	if err != nil {
 		return err
 	}
@@ -100,38 +98,5 @@ func CreateDockerVolumeBackup(options CreateBackupOptions) (err error) {
 // DeleteDockerVolumeBackup deletes a backup of a Docker volume
 func DeleteDockerVolumeBackup(options DeleteBackupOptions) (err error) {
 	//TODO
-	return nil
-}
-
-// downloadDockerImage downloads a Docker image
-func downloadDockerImage(name string) (err error) {
-	// Create a Docker client
-	cli, err := client.NewClientWithOpts(client.WithHost(config.DockerApiUrl))
-	if err != nil {
-		return err
-	}
-	defer func(cli *client.Client) {
-		errClose := cli.Close()
-		if errClose != nil {
-			err = errClose
-		}
-	}(cli)
-
-	reader, err := cli.ImagePull(context.Background(), name, types.ImagePullOptions{})
-	if err != nil {
-		return err
-	}
-	defer func(reader io.ReadCloser) {
-		errClose := reader.Close()
-		if errClose != nil {
-			err = errClose
-		}
-	}(reader)
-
-	_, err = io.Copy(os.Stdout, reader)
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
