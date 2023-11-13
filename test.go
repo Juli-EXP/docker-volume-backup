@@ -3,21 +3,48 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-
-	"github.com/Juli-EXP/docker-volume-backup/backup"
+	"github.com/Juli-EXP/docker-volume-backup/config"
+	"github.com/Juli-EXP/docker-volume-backup/controller"
 )
 
 func main() {
-	//printVolumes()
-	//printVolumesWithSize()
-	//testCreateVolume()
-	//testDeleteVolume("test")
+	config.BackupVolumePath = "/home/julian/backup"
+
+	//testPrintVolumes()
+	//testPrintVolumesWithSize()
+	//_ = testCreateVolume()
+	//testDeleteVolume(volumeName)
 	//testCreateVolumeBackup("portainer_data")
+	//testCheckFreeStorage()
+
 	fmt.Println("Hello World")
+
+	/* TODO Create Backup */
+	testPrintVolumesWithSize()
+	backupVolumeName, _ := controller.CreateDockerBackupVolume()
+	fmt.Printf("Backup volume name: %s\n", backupVolumeName)
+	//controller.CheckStorageAvailability
+	freeStorage, _ := controller.CheckFreeStorage(controller.StorageLocation{
+		Type:     config.Local,
+		Path:     "/home/julian/backup",
+		Host:     "",
+		Username: "",
+		Password: ""})
+	fmt.Printf("Free storage on location: %d\n", freeStorage)
+	//backupSize = -> Calculate size of docker volumes to be backed up
+	//if freeStorage <= backupSize -> error
+
+	_ = controller.CreateDockerVolumeBackup(controller.CreateBackupOptions{
+		VolumeName:       "portainer_data",
+		BackupVolumeName: backupVolumeName,
+		IncludeCifs:      false,
+		IncludeNfs:       false,
+	})
+	_ = controller.DeleteDockerBackupVolume(backupVolumeName)
 }
 
 func testPrintVolumes() {
-	volumeResponse, err := backup.GetDockerVolumes()
+	volumeResponse, err := controller.GetDockerVolumes()
 	if err != nil {
 		panic(err)
 	}
@@ -29,7 +56,7 @@ func testPrintVolumes() {
 }
 
 func testPrintVolumesWithSize() {
-	volumeResponse, err := backup.GetDockerVolumesWithSize()
+	volumeResponse, err := controller.GetDockerVolumesWithSize()
 	if err != nil {
 		panic(err)
 	}
@@ -44,16 +71,17 @@ func testPrintVolumesWithSize() {
 	}
 }
 
-func testCreateVolume() {
-	volumeName, err := backup.CreateDockerBackupVolume()
+func testCreateVolume() (volumeName string) {
+	volumeName, err := controller.CreateDockerBackupVolume()
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println(volumeName)
+	return volumeName
 }
 
 func testDeleteVolume(volumeName string) {
-	err := backup.DeleteDockerBackupVolume(volumeName)
+	err := controller.DeleteDockerBackupVolume(volumeName)
 	if err != nil {
 		panic(err)
 	}
@@ -61,12 +89,12 @@ func testDeleteVolume(volumeName string) {
 }
 
 func testCreateVolumeBackup(volumeName string) {
-	backupVolumeName, err := backup.CreateDockerBackupVolume()
+	backupVolumeName, err := controller.CreateDockerBackupVolume()
 	if err != nil {
 		panic(err)
 	}
 
-	err = backup.CreateDockerVolumeBackup(backup.CreateBackupOptions{
+	err = controller.CreateDockerVolumeBackup(controller.CreateBackupOptions{
 		VolumeName:       volumeName,
 		BackupVolumeName: backupVolumeName,
 		IncludeCifs:      false,
@@ -76,8 +104,26 @@ func testCreateVolumeBackup(volumeName string) {
 		panic(err)
 	}
 
-	err = backup.DeleteDockerBackupVolume(backupVolumeName)
+	err = controller.DeleteDockerBackupVolume(backupVolumeName)
 	if err != nil {
 		panic(err)
 	}
+}
+
+func testCheckFreeStorage() {
+	freeStorage, err := controller.CheckFreeStorage(controller.StorageLocation{
+		Type:     config.Local,
+		Path:     "/home/julian",
+		Host:     "",
+		Username: "",
+		Password: "",
+	})
+
+	if err != nil {
+		panic(err)
+	}
+	freeStorageGB := float64(freeStorage) / (1 << 30)
+
+	fmt.Printf("%d B\n", freeStorage)
+	fmt.Printf("%f GB\n", freeStorageGB)
 }

@@ -1,4 +1,4 @@
-package backup
+package controller
 
 import (
 	"context"
@@ -15,21 +15,13 @@ import (
 	"github.com/pkg/errors"
 )
 
-type VolumeType string
-
-const (
-	Nfs   VolumeType = "nfs"
-	Cifs  VolumeType = "cifs"
-	Local VolumeType = "local"
-)
-
 type Volume struct {
 	Name      string `json:"Name"`
 	UsageData struct {
 		Size int64 `json:"Size"`
 	} `json:"UsageData"`
-	Type   VolumeType        `json:"Type"`
-	Labels map[string]string `json:"Labels"`
+	Type   config.StorageType `json:"Type"`
+	Labels map[string]string  `json:"Labels"`
 	//TODO Backup status
 }
 
@@ -37,7 +29,7 @@ type VolumesResponse struct {
 	Volumes []Volume `json:"Volumes"`
 }
 
-// GetDockerVolumes Returns array of all Docker volumes with Name and Type
+// GetDockerVolumes UNUSED: GetDockerVolumes Returns array of all Docker volumes with Name and Type
 func GetDockerVolumes() (volumeResponse VolumesResponse, err error) {
 	// Create a Docker client
 	cli, err := client.NewClientWithOpts(client.WithHost(config.DockerApiUrl))
@@ -70,31 +62,31 @@ func GetDockerVolumes() (volumeResponse VolumesResponse, err error) {
 		}
 
 		// Check if options type is nfs, cifs or empty
-		var volumeType VolumeType
+		var storageType config.StorageType
 		if string(opt) != "null" {
 			switch volumeInfo.Options["type"] {
 			case "nfs":
-				volumeType = Nfs
+				storageType = config.Nfs
 			case "cifs":
-				volumeType = Cifs
+				storageType = config.Cifs
 			default:
-				volumeType = Local
+				storageType = config.Local
 			}
 		} else {
-			volumeType = Local
+			storageType = config.Local
 		}
 
 		// Append volume name and type to the result list
 		volumeResponse.Volumes = append(volumeResponse.Volumes, Volume{
 			Name: dockerVolume.Name,
-			Type: volumeType,
+			Type: storageType,
 		})
 	}
 
 	return volumeResponse, nil
 }
 
-// GetDockerVolumesWithSize Returns array of all Docker volumes with Name, Size, Type and Labels
+// GetDockerVolumesWithSize returns array of all Docker volumes with Name, Size, Type and Labels
 func GetDockerVolumesWithSize() (VolumesResponse, error) {
 	url := config.DockerApiUrl + "/system/df"
 
@@ -133,7 +125,7 @@ func GetDockerVolumesWithSize() (VolumesResponse, error) {
 	return volumesResponse, nil
 }
 
-// CreateDockerBackupVolume Creates a Docker volume where backups are stored
+// CreateDockerBackupVolume creates a Docker volume where backups are stored
 func CreateDockerBackupVolume() (volumeName string, err error) {
 	// Create a Docker client
 	cli, err := client.NewClientWithOpts(client.WithHost(config.DockerApiUrl))
@@ -149,10 +141,9 @@ func CreateDockerBackupVolume() (volumeName string, err error) {
 
 	var volumeConfig volume.CreateOptions
 	volumeName = "dvb-backup-" + fmt.Sprint(time.Now().Unix())
-	//var volumeType = config.BACKUP_VOLUME_TYPE
 
 	switch config.BackupVolumeType {
-	case string(Local):
+	case string(config.Local):
 		volumeConfig = volume.CreateOptions{
 			Name:   volumeName,
 			Driver: "local",
@@ -162,10 +153,10 @@ func CreateDockerBackupVolume() (volumeName string, err error) {
 				"o":      "bind",
 			},
 			Labels: map[string]string{
-				"com.dvb.volume": "true",
+				"dvb.volume.temp": "true",
 			},
 		}
-	case string(Nfs):
+	case string(config.Nfs):
 		volumeConfig = volume.CreateOptions{
 			Name:   volumeName,
 			Driver: "local",
@@ -175,10 +166,10 @@ func CreateDockerBackupVolume() (volumeName string, err error) {
 				"device": ":" + config.BackupVolumePath,
 			},
 			Labels: map[string]string{
-				"com.dvb.volume": "true",
+				"dvb.volume.temp": "true",
 			},
 		}
-	case string(Cifs):
+	case string(config.Cifs):
 		volumeConfig = volume.CreateOptions{
 			Name:   volumeName,
 			Driver: "local",
@@ -188,7 +179,7 @@ func CreateDockerBackupVolume() (volumeName string, err error) {
 				"device": config.BackupVolumePath,
 			},
 			Labels: map[string]string{
-				"com.dvb.volume": "true",
+				"dvb.volume.temp": "true",
 			},
 		}
 	default:
@@ -204,7 +195,7 @@ func CreateDockerBackupVolume() (volumeName string, err error) {
 	return volumeName, err
 }
 
-// DeleteDockerBackupVolume Deletes a Docker volume where backups are stored
+// DeleteDockerBackupVolume deletes a Docker volume where backups are stored
 // This will not delete data on the disk
 func DeleteDockerBackupVolume(volumeName string) error {
 	// Create a Docker client
@@ -225,8 +216,8 @@ func DeleteDockerBackupVolume(volumeName string) error {
 		return err
 	}
 
-	// Check if the volume has the "com.dvb.volume" label set to "true"
-	labelValue, labelExists := volumeInfo.Labels["com.dvb.volume"]
+	// Check if the volume has the "dvb.volume.temp" label set to "true"
+	labelValue, labelExists := volumeInfo.Labels["dvb.volume.temp"]
 	if labelExists && strings.ToLower(labelValue) == "true" {
 		// If the label is set to "true," delete the volume
 		err := cli.VolumeRemove(context.Background(), volumeName, true)
@@ -237,5 +228,5 @@ func DeleteDockerBackupVolume(volumeName string) error {
 		return nil
 	}
 
-	return errors.Errorf("Docker volume %s was not deleted because the label com.dvb.volume is not set to true.", volumeName)
+	return errors.Errorf("Docker volume %s was not deleted because the label dvb.volume.temp is not set to true.", volumeName)
 }

@@ -8,7 +8,7 @@ THRESHOLD=$(date -d "$RETENTION days ago" +"%Y%m%d%H%M%S")
 
 find ${BACKUP_DIR} -maxdepth 1 -type f -print0  | while IFS= read -d '' -r file
 do
-    #Check if filename matches backup filename structure
+    #Check if filename matches controller filename structure
     if [[ "$(basename "$file")" =~ ^.*.tar\.gz$ ]]
     then
         # Check if file is old enough to delete it

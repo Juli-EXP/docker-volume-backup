@@ -42,10 +42,10 @@ services:
       - TZ=Europe/Rome  # Adjust to your timezone
       - DOCKER_HOST=tcp://docker-socket-proxy:2375
       - BACKUP_VOLUME=docker-volume-backup_storage-location # Use the full name of the docker volume which gets displayed by running docker volume ls
-      - BACKUP_DIR=/backup  # Optional: change the location of the backup folder inside the container. Needs to match the volume mounting point
+      - BACKUP_DIR=/controller  # Optional: change the location of the controller folder inside the container. Needs to match the volume mounting point
       - RETENTION=7 # Optional: change the number of days of backups to be kept
     volumes:
-      - storage-location:/backup  # Replace with your volume
+      - storage-location:/controller  # Replace with your volume
     depends_on:
       - docker-socket-proxy
     restart: always
@@ -90,12 +90,7 @@ networks:
 | BACKUP_VOLUME | backup-data | The full name of the backup volume which gets displayed by running docker volume ls |
 | BACKUP_DIR | /backup | Location of the backup directory inside the container |
 | TEMP_VOLUME | temp-location | The full name of the temp volume which gets displayed by running docker volume ls |
-| TEMP_DIR | /temp | Location of the backup directory inside the container |
 | RETENTION | 7 | Number of days how long the backups will be kept |
-| IGNORED_VOLUMES | docker-volume-backup_temp-location | Comma seperated list of volumes wich are ignored by the backup script
-| CRON_BACKUP | 0 8 * * * | Comma seperated list of cron schedules for the backup script |
-| CRON_PURGE | 0 9 * * * | Comma seperated list of cron schedules for the purge script |
-| CRON_TEMP | 0 10 * * * | Comma seperated list of cron schedules for the temp folder script |
 
 
 ### Volume mappings
@@ -104,5 +99,4 @@ networks:
 | Volume | Function |
 | --- | --- |
 | /backup | Primary location for the backup storage. It is recomended to use a nfs or cifs volume |
-| /temp | Secondary location for the backup storage, in case the primary is down. It is recomended to use a local volume |
 

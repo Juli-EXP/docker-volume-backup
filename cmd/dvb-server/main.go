@@ -14,7 +14,7 @@ func main() {
 
 	api.ConfigRouter(apiRouter.Group("/config"))
 	api.VolumeRouter(apiRouter.Group("/volume"))
-	api.BackupRouter(apiRouter.Group("/backup"))
+	api.BackupRouter(apiRouter.Group("/controller"))
 
 	err := server.Run(":" + config.ServerPort)
 	if err != nil {

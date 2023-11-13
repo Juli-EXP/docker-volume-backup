@@ -1,11 +1,13 @@
-Check size of volumes to be backuped
-Rest api
-Check if disk space is sufficent in temp
-Create tar.gz for each volume in temp location
+OK - Check size of volumes to be backed upped
 Check if remote location has enough space
-Copy to remote location
+Create tar.gz file
+Rest api
 Error handling
+Option to stop container before creating backup (default is false)
+Cleanup function. Removes all volumes or containers with a specific tag (dvb-backup.temp)
+Purge options: keep last x backups or delete backups older than x days
+local docker socket should be default unix:///var/run/docker.sock
 Cli
-Optional external db (key/value) for persistent status, etc
+No - Optional external db (key/value) for persistent status, etc
 Prometheus metrics
 Apprise notifications

@@ -1,8 +1,10 @@
-package backup
+package controller
 
 import (
 	"context"
 	"fmt"
+	"io"
+	"os"
 	"time"
 
 	"github.com/Juli-EXP/docker-volume-backup/config"
@@ -14,14 +16,15 @@ import (
 type CreateBackupOptions struct {
 	VolumeName       string // Volume to be backed up
 	BackupVolumeName string // Volume where the backup will be saved
-	IncludeNfs       bool   // Default false
-	IncludeCifs      bool   // Default false
+	// TODO move to config.variables.go
+	IncludeNfs  bool // Default false
+	IncludeCifs bool // Default false
 }
 
 type DeleteBackupOptions struct{}
 
-// CreateDockerVolumeBackup Creates a backup of a Docker volume
-func CreateDockerVolumeBackup(options CreateBackupOptions) error {
+// CreateDockerVolumeBackup creates a backup of a Docker volume
+func CreateDockerVolumeBackup(options CreateBackupOptions) (err error) {
 	// Create a Docker client
 	cli, err := client.NewClientWithOpts(client.WithHost(config.DockerApiUrl))
 	if err != nil {
@@ -34,12 +37,15 @@ func CreateDockerVolumeBackup(options CreateBackupOptions) error {
 		}
 	}(cli)
 
-	// TODO download image
+	err = downloadDockerImage(config.BackupContainerImage)
+	if err != nil {
+		return err
+	}
 
 	containerConfig := &container.Config{
 		Image: config.BackupContainerImage,
 		Labels: map[string]string{
-			"com.dvb.container": "true",
+			"dvb.container.temp": "true",
 		},
 		Cmd: []string{
 			"ash",
@@ -91,7 +97,41 @@ func CreateDockerVolumeBackup(options CreateBackupOptions) error {
 	return nil
 }
 
-// DeleteDockerVolumeBackup Deletes a backup of a Docker volume
-func DeleteDockerVolumeBackup(options DeleteBackupOptions) error {
+// DeleteDockerVolumeBackup deletes a backup of a Docker volume
+func DeleteDockerVolumeBackup(options DeleteBackupOptions) (err error) {
+	//TODO
+	return nil
+}
+
+// downloadDockerImage downloads a Docker image
+func downloadDockerImage(name string) (err error) {
+	// Create a Docker client
+	cli, err := client.NewClientWithOpts(client.WithHost(config.DockerApiUrl))
+	if err != nil {
+		return err
+	}
+	defer func(cli *client.Client) {
+		errClose := cli.Close()
+		if errClose != nil {
+			err = errClose
+		}
+	}(cli)
+
+	reader, err := cli.ImagePull(context.Background(), name, types.ImagePullOptions{})
+	if err != nil {
+		return err
+	}
+	defer func(reader io.ReadCloser) {
+		errClose := reader.Close()
+		if errClose != nil {
+			err = errClose
+		}
+	}(reader)
+
+	_, err = io.Copy(os.Stdout, reader)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

@@ -20,3 +20,11 @@ func getEnv(key, fallback string) string {
 
 	return fallback
 }
+
+type StorageType string
+
+const (
+	Nfs   StorageType = "nfs"
+	Cifs  StorageType = "cifs"
+	Local StorageType = "local"
+)

@@ -26,8 +26,6 @@ ENV RETENTION=7
 
 VOLUME /backup
 
-VOLUME /temp
-
 COPY scripts/*.sh /app/
 
 RUN chmod +x /app/*.sh
@@ -35,7 +33,7 @@ RUN chmod +x /app/*.sh
 
 COPY scripts/crontab /etc/cron.d/backup-volume
 
-RUN chmod 644 /etc/cron.d/backup-volume
+RUN chmod 644 /etc/cron.d/controller-volume
 
 
 ENTRYPOINT [ "/app/entrypoint.sh" ]

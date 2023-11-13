@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/Juli-EXP/docker-volume-backup/backup"
+	"github.com/Juli-EXP/docker-volume-backup/controller"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 )
@@ -28,10 +28,10 @@ func VolumeRouter(g *gin.RouterGroup) {
 	})
 }
 
-func getDockerVolumesWithSize() (code int, volumesResponse backup.VolumesResponse, err error) {
-	volumesResponse, err = backup.GetDockerVolumesWithSize()
+func getDockerVolumesWithSize() (code int, volumesResponse controller.VolumesResponse, err error) {
+	volumesResponse, err = controller.GetDockerVolumesWithSize()
 	if err != nil {
-		return 500, backup.VolumesResponse{}, err
+		return 500, controller.VolumesResponse{}, err
 	}
 
 	// Check if volumesResponse is empty
@@ -43,14 +43,14 @@ func getDockerVolumesWithSize() (code int, volumesResponse backup.VolumesRespons
 }
 
 func getDockerVolumeWithSize(volumeName string) (code int, response any, err error) {
-	volumesResponse, err := backup.GetDockerVolumesWithSize()
+	volumesResponse, err := controller.GetDockerVolumesWithSize()
 	if err != nil {
-		return 500, backup.Volume{}, err
+		return 500, controller.Volume{}, err
 	}
 
 	// Check if volumesResponse is empty
 	if len(volumesResponse.Volumes) == 0 {
-		return 204, backup.Volume{}, nil
+		return 204, controller.Volume{}, nil
 	}
 
 	for _, volume := range volumesResponse.Volumes {
@@ -59,5 +59,5 @@ func getDockerVolumeWithSize(volumeName string) (code int, response any, err err
 		}
 	}
 
-	return 404, backup.Volume{}, errors.Errorf("No volume with the name %s was found", volumeName)
+	return 404, controller.Volume{}, errors.Errorf("No volume with the name %s was found", volumeName)
 }

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script to backup all Docker Volumes
+# Script to controller all Docker Volumes
 
 echo "Starting Docker Volume Backup"
 
