@@ -87,6 +87,8 @@ func GetDockerVolumes() (volumeResponse VolumesResponse, err error) {
 	return volumeResponse, nil
 }
 
+// TODO GetDockerVolume
+
 // GetDockerVolumesWithSize returns array of all Docker volumes with Name, Size, Type and Labels
 func GetDockerVolumesWithSize() (VolumesResponse, error) {
 	var url string
@@ -143,6 +145,10 @@ func GetDockerVolumesWithSize() (VolumesResponse, error) {
 	return volumesResponse, nil
 }
 
+// TODO GetDockerVolumeWithSize
+
+// TODO GetDockerVolumeSize
+
 // CreateDockerBackupVolume creates a Docker volume where backups are stored
 func CreateDockerBackupVolume() (volumeName string, err error) {
 	// Create a Docker client
@@ -162,6 +168,7 @@ func CreateDockerBackupVolume() (volumeName string, err error) {
 
 	switch config.BackupVolumeType {
 	case string(config.Local):
+		fmt.Println(config.BackupVolumePath)
 		volumeConfig = volume.CreateOptions{
 			Name:   volumeName,
 			Driver: "local",

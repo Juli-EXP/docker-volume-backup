@@ -8,41 +8,36 @@ import (
 )
 
 func main() {
-	config.BackupVolumePath = "/home/julian/backup"
-
-	//testPrintVolumes()
-	testPrintVolumesWithSize()
-	//_ = testCreateVolume()
-	//testDeleteVolume(volumeName)
-	//testCreateVolumeBackup("portainer_data")
-	//testCheckFreeStorage()
-
 	fmt.Println("Hello World")
+	config.BackupVolumePath = "/home/julian/backup"
+	volumeName := "portainer_data"
 
-	/* TODO Create Backup
+	/* TODO Create Backup */
 	testPrintVolumesWithSize()
+
 	backupVolumeName, _ := controller.CreateDockerBackupVolume()
 	fmt.Printf("Backup volume name: %s\n", backupVolumeName)
-	//controller.CheckStorageAvailability
-	freeStorage, _ := controller.CheckFreeStorage(controller.StorageLocation{
-		Type:     config.Local,
-		Path:     "/home/julian/backup",
-		Host:     "",
-		Username: "",
-		Password: ""})
-	fmt.Printf("Free storage on location: %d\n", freeStorage)
-	//backupSize = -> Calculate size of docker volumes to be backed up
+
+	if available, _ := controller.CheckStorageAvailabilityByDockerVolume(volumeName); !available {
+		fmt.Println("Storage not available")
+		return
+	}
+
+	//freeStorage, _ :=controller.CheckFreeStorageByDockerVolume(volumeName)
+	//backupSize = controller.GetDockerVolumeWithSize(volumeName).UsageData.Size
+	//backupSize = controller.GetDockerVolumeSize(volumeName)
+
 	//if freeStorage <= backupSize -> error
 
 	_ = controller.CreateDockerVolumeBackup(controller.CreateBackupOptions{
-		VolumeName:       "portainer_data",
+		VolumeName:       volumeName,
 		BackupVolumeName: backupVolumeName,
-		IncludeCifs:      false,
-		IncludeNfs:       false,
 	})
+
 	_ = controller.DeleteDockerBackupVolume(backupVolumeName)
-	*/
+
 }
+
 func byteCountBinary(size int64) string {
 	const unit = 1024
 	if size < unit {
@@ -110,8 +105,6 @@ func testCreateVolumeBackup(volumeName string) {
 	err = controller.CreateDockerVolumeBackup(controller.CreateBackupOptions{
 		VolumeName:       volumeName,
 		BackupVolumeName: backupVolumeName,
-		IncludeCifs:      false,
-		IncludeNfs:       false,
 	})
 	if err != nil {
 		panic(err)
@@ -121,22 +114,4 @@ func testCreateVolumeBackup(volumeName string) {
 	if err != nil {
 		panic(err)
 	}
-}
-
-func testCheckFreeStorage() {
-	freeStorage, err := controller.CheckFreeStorage(controller.StorageLocation{
-		Type:     config.Local,
-		Path:     "/home/julian",
-		Host:     "",
-		Username: "",
-		Password: "",
-	})
-
-	if err != nil {
-		panic(err)
-	}
-	freeStorageGB := float64(freeStorage) / (1 << 30)
-
-	fmt.Printf("%d B\n", freeStorage)
-	fmt.Printf("%f GB\n", freeStorageGB)
 }

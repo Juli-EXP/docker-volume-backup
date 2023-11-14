@@ -14,9 +14,6 @@ import (
 type CreateBackupOptions struct {
 	VolumeName       string // Volume to be backed up
 	BackupVolumeName string // Volume where the backup will be saved
-	// TODO move to config.variables.go
-	IncludeNfs  bool // Default false
-	IncludeCifs bool // Default false
 }
 
 type DeleteBackupOptions struct{}
@@ -35,9 +32,11 @@ func CreateDockerVolumeBackup(options CreateBackupOptions) (err error) {
 		}
 	}(cli)
 
-	err = DownloadDockerImage(config.BackupContainerImage)
-	if err != nil {
-		return err
+	if imageExists, err := CheckDockerImageLocal(config.BackupContainerImage); !imageExists {
+		err = DownloadDockerImage(config.BackupContainerImage)
+		if err != nil {
+			return err
+		}
 	}
 
 	containerConfig := &container.Config{
